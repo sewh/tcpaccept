@@ -1,0 +1,39 @@
+# playbook that installs tcpaccept to remote host
+---
+- name: install tcpaccept to remote host
+  hosts: all
+  tasks:
+    - name: ensure we have tcpaccept build
+      delegate_to: 127.0.0.1
+      file:
+        path: "./tcpaccept"
+        state: file
+
+    - name: install required packages
+      apt:
+        name:
+           - libnetfilter-queue1
+        state: latest
+        update_cache: yes
+
+    - name: copy up binaries
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+      with_items:
+        - src: tcpaccept
+          dest: /usr/local/bin/tcpaccept
+          mode: '0755'
+        - src: tcpaccept.service
+          dest: /etc/systemd/system/tcpaccept.service
+          mode: '0644'
+
+    - name: start tcpaccept
+      systemd:
+        name: tcpaccept.service
+        state: started
+        daemon_reload: yes
+

@@ -1,0 +1,13 @@
+[Unit]
+Description=tcpaccept
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/sbin/iptables -A INPUT -p tcp -m state --state NEW -j NFQUEUE --queue-num 0
+ExecStart=/usr/local/bin/tcpaccept -q 0 -o /var/lib/tcpaccept
+ExecStop=/usr/sbin/iptables -D INPUT -p tcp -m state --state NEW -j NFQUEUE --queue-num 0
+
+[Install]
+WantedBy=multi-user.target
